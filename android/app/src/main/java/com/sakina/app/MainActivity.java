@@ -42,8 +42,13 @@ public class MainActivity extends Activity {
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setMediaPlaybackRequiresUserGesture(false);
         webView.setWebChromeClient(new WebChromeClient());
+        WebViewAssetLoader.AssetsPathHandler assets = new WebViewAssetLoader.AssetsPathHandler(this);
         WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
-            .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this)).build();
+            // AAPT expands .gz assets and removes their suffix in the APK.
+            // Keep the same web URLs; compressedJson also accepts plain JSON.
+            .addPathHandler("/assets/", path -> assets.handle(
+                path.startsWith("data/") && path.endsWith(".json.gz")
+                    ? path.substring(0, path.length() - 3) : path)).build();
         webView.setWebViewClient(new WebViewClientCompat() {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 return loader.shouldInterceptRequest(request.getUrl());

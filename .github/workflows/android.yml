@@ -42,6 +42,8 @@ jobs:
           cp -R dist/. android/app/src/main/assets/
       - name: Build installable APK
         run: gradle -p android :app:assembleDebug --no-daemon
+      - name: Verify bundled content paths
+        run: python scripts/verify-apk.py android/app/build/outputs/apk/debug/app-debug.apk
       - name: Prepare download
         run: |
           mkdir -p apk

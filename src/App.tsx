@@ -34,6 +34,7 @@ import type { ReligiousEntry as Entry } from './religiousContent';
 import { surahNames } from './audioCatalog';
 import MemorizationReader from './MemorizationReader';
 import HadithLibrary from './HadithLibrary';
+import MushafReader, { readReadingMark, readReadingPage, getMushaf } from './MushafReader';
 import { readJourney, PROGRESS_KEY } from './quranProgress';
 import type { SurahProgress } from './quranProgress';
 
@@ -191,6 +192,9 @@ export default function App() {
   } | null>(null);
   const [journey, setJourney] = useState(readJourney);
   const [studyMode, setStudyMode] = useState(false);
+  const [readingMark, setReadingMark] = useState(readReadingMark);
+  const [readingPage, setReadingPage] = useState(readReadingPage);
+  const [resumePage, setResumePage] = useState<number | undefined>();
   const [progressError, setProgressError] = useState('');
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(false);
@@ -378,7 +382,8 @@ export default function App() {
       setProgressError('تعذّر حفظ تقدّمك على الجهاز. موضعك متاح الآن، لكنه قد لا يبقى بعد إغلاق الصفحة.');
     }
   }
-  async function openSurah(surah: { number: number; name: string }, study = false) {
+  async function openSurah(surah: { number: number; name: string }, study = false, startPage?: number) {
+    setResumePage(startPage);
     setStudyMode(study);
     setMenu(false);
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -402,7 +407,13 @@ export default function App() {
       return;
     }
     try {
-      const data = await getQuran('surah/' + surah.number + '/quran-uthmani');
+      let data;
+      try {
+        const book = await getMushaf();
+        data = { ayahs: book.pages.flat().filter(v => v.surah === surah.number).map(v => ({ numberInSurah: v.number, text: v.text })) };
+      } catch {
+        data = await getQuran('surah/' + surah.number + '/quran-uthmani');
+      }
       if (!Array.isArray(data.ayahs) || !data.ayahs.length)
         throw new Error('data');
       if (id === requestId.current) {
@@ -801,12 +812,7 @@ export default function App() {
                     <h3>{journey.lastSurah ? 'سورة ' + surahNames[journey.lastSurah - 1] : last.name}</h3>
                     <p>{journey.lastSurah ? 'علامة الحفظ عند الآية ' + ar(journey.surahs[journey.lastSurah].current) + ' • تم حفظ ' + ar(journey.surahs[journey.lastSurah].memorized.length) + ' آيات' : 'ابدأ رحلة الحفظ آية بآية، وسنتذكر موضعك.'}</p>
                   </div>
-                  <button
-                    className="primary small"
-                    onClick={() => openSurah(last)}
-                  >
-                    متابعة القراءة <ArrowLeft size={16} />
-                  </button>
+
                   <button className="primary small" onClick={() => {
                     const number = journey.lastSurah || last.number;
                     void openSurah({ number, name: 'سورة ' + surahNames[number - 1] }, true);
@@ -814,6 +820,18 @@ export default function App() {
                     {journey.lastSurah ? 'متابعة الحفظ' : 'ابدأ الحفظ آية بآية'} <Bookmark size={16} />
                   </button>
                 </article>
+                <article className="continue-card reading-resume-card">
+                  <span className="round-icon"><Bookmark size={22} /></span>
+                  <div><small>علامة الوقوف في المصحف</small>
+                    <h3>{readingMark ? 'سورة ' + surahNames[readingMark.surah - 1] : last.name}</h3>
+                    <p>{readingMark ? 'الآية ' + ar(readingMark.ayah) + ' • الصفحة ' + ar(readingMark.page) : readingPage ? 'آخر صفحة قرأتها: ' + ar(readingPage) : 'ابدأ القراءة واضغط رقم الآية لتثبيت موضعك.'}</p>
+                  </div>
+                  <button className="primary small" onClick={() => {
+                    const number = readingMark?.surah || last.number;
+                    void openSurah({ number, name: 'سورة ' + surahNames[number - 1] }, false, readingMark?.page || readingPage || undefined);
+                  }}>متابعة القراءة <Bookmark size={16} /></button>
+                </article>
+
               </section>
               <p className="quiet-footer">
                 «أحب الأعمال إلى الله أدومها وإن قل»{' '}
@@ -913,32 +931,11 @@ export default function App() {
                           onChange={value => updateMemorization(selected.number, value)}
                           onTafsir={ayah => openTafsir(selected.number, ayah)} />}
                       </>}
-                      {!!verses.length && !studyMode && (
-                        <article className="quran-reader">
-                          <div className="reader-ornament">۞</div>
-                          <div style={{ fontSize }}>
-                            {verses.map(v => (
-                              <span key={v.numberInSurah}>
-                                {v.text}{' '}
-                                <button className="ayah-number ayah-tafsir-button"
-                                  aria-label={'تفسير الآية ' + v.numberInSurah}
-                                  onClick={() => openTafsir(selected.number, v.numberInSurah)}>
-                                  {ar(v.numberInSurah)}
-                                </button>{' '}
-                              </span>
-                            ))}
-                          </div>
-                          <p className="reader-source">اضغط رقم الآية لقراءة تفسيرها.<br />
-                            النص:{' '}
-                            {selected.number === 1
-                              ? 'سورة الفاتحة • نص مضمّن للقراءة دون اتصال'
-                              : 'AlQuran Cloud • الرسم العثماني'}
-                            <br />
-                            تُحفظ السور المفتوحة على هذا الجهاز للعودة إليها دون
-                            اتصال.
-                          </p>
-                        </article>
-                      )}
+                      {!studyMode && <MushafReader key={selected.number + ':' + (resumePage || 0)}
+                        initialSurah={selected.number} resumePage={resumePage} mark={readingMark}
+                        fontSize={fontSize} onMark={setReadingMark} onPage={setReadingPage}
+                        onTafsir={openTafsir} />}
+
                     </>
                   ) : (
                     <>

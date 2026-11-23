@@ -3,11 +3,11 @@ import { BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import { surahNames } from './audioCatalog';
 import { fetchQuranResource, tafsirSources } from './tafsirService';
 
-type Verse = { numberInSurah: number; text: string };
-type Edition = { number: number; ayahs: Verse[]; edition: { identifier: string } };
-type Pair = { number: number; verse: string; explanation: string };
+import { alignTafsir } from './tafsirPairs';
+import type { TafsirPair as Pair } from './tafsirPairs';
 type Props = { initialSurah?: number; initialAyah?: number; initialSource?: string; onRead: (surah: number) => void };
 export default function TafsirReader({ initialSurah = 1, initialAyah = 1, initialSource = 'ar.muyassar', onRead }: Props) {
+  const [mode, setMode] = useState<'ayah' | 'surah'>('ayah');
   const [surah, setSurah] = useState(initialSurah);
   const [ayah, setAyah] = useState(initialAyah);
   const [source, setSource] = useState(initialSource);
@@ -29,15 +29,8 @@ export default function TafsirReader({ initialSurah = 1, initialAyah = 1, initia
     const timer = window.setTimeout(() => controller.abort(), 15000);
     async function load() {
       try {
-        const data: Edition[] = await fetchQuranResource('surah/' + surah + '/editions/quran-uthmani,' + source, controller.signal);
-        const quran = data.find(d => d.edition?.identifier === 'quran-uthmani' && d.number === surah);
-        const tafsir = data.find(d => d.edition?.identifier === source && d.number === surah);
-        if (!quran?.ayahs?.length || !tafsir?.ayahs?.length) throw new Error('invalid');
-        const result = quran.ayahs.map(v => {
-          const match = tafsir.ayahs.find(t => t.numberInSurah === v.numberInSurah);
-          if (!match || typeof match.text !== 'string') throw new Error('missing-ayah');
-          return { number: v.numberInSurah, verse: v.text, explanation: match.text };
-        });
+        const data = await fetchQuranResource('surah/' + surah + '/editions/quran-uthmani,' + source, controller.signal);
+        const result = alignTafsir(data, surah, source);
         if (!controller.signal.aborted) {
           setPairs(result);
           try { localStorage.setItem(cacheKey, JSON.stringify(result)); } catch { /* Quota is optional. */ }
@@ -55,9 +48,12 @@ export default function TafsirReader({ initialSurah = 1, initialAyah = 1, initia
     void load();
     return () => { cancelled = true; controller.abort(); window.clearTimeout(timer); };
   }, [surah, source, retry]);
+  useEffect(() => {
+    if (mode === 'surah' && pairs.length) document.getElementById('tafsir-ayah-' + ayah)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, [mode, ayah, pairs]);
   const current = pairs.find(p => p.number === ayah);
   return <section className="tafsir-reader">
-    <div className="learning-intro"><BookOpen size={28} /><div><h2>تدبّر معاني القرآن</h2><p>اختر السورة والآية، ثم اقرأ التفسير مع النص القرآني ومصدره.</p></div></div>
+    <div className="learning-intro"><BookOpen size={28} /><div><h2>تدبّر معاني القرآن</h2><p>تفسير المصحف كاملًا: ١١٤ سورة. اختر آية بعينها أو اعرض السورة كاملة مع تفسير كل آية.</p></div></div>
     <div className="tafsir-selectors">
       <label>السورة<select aria-label="سورة التفسير" value={surah} onChange={e => { setSurah(Number(e.target.value)); setAyah(1); setPairs([]); }}>{surahNames.map((name, i) => <option key={i + 1} value={i + 1}>{i + 1}. {name}</option>)}</select></label>
       <label>المصدر<select aria-label="مصدر التفسير" value={source} onChange={e => { setPairs([]); setSource(e.target.value); }}>{tafsirSources.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
@@ -66,9 +62,24 @@ export default function TafsirReader({ initialSurah = 1, initialAyah = 1, initia
         {pairs.map(p => <option key={p.number} value={p.number}>الآية {p.number.toLocaleString('ar-EG')}</option>)}
       </select></label>
     </div>
+    <div className="reading-mode-tabs" aria-label="طريقة عرض التفسير">
+      <button aria-pressed={mode === 'ayah'} onClick={() => setMode('ayah')}>تفسير آية</button>
+      <button aria-pressed={mode === 'surah'} onClick={() => setMode('surah')}>تفسير السورة كاملة</button>
+    </div>
+    {!!pairs.length && <p className="source">تفسير {pairs.length.toLocaleString('ar-EG')} آيات من سورة {surahNames[surah - 1]} · {sourceInfo.name}</p>}
+    {mode === 'surah' && pairs.length > 0 && <div className="tafsir-surah-list">
+      {pairs.map(pair => <article className={'tafsir-ayah-card ' + (pair.number === ayah ? 'focused-ayah' : '')} id={'tafsir-ayah-' + pair.number} key={pair.number}>
+        <div className="tafsir-reference">سورة {surahNames[surah - 1]} · الآية {pair.number.toLocaleString('ar-EG')}</div>
+        <p className="religious tafsir-verse">{pair.verse}</p>
+        <div className="tafsir-explanation"><h3>{sourceInfo.name}</h3><p>{pair.explanation}</p></div>
+        <p className="source">{sourceInfo.author}</p>
+        <button className="text-button" onClick={() => { setAyah(pair.number); setMode('ayah'); }}>عرض الآية منفردة</button>
+      </article>)}
+      <p className="source">المصدر: <a href={'https://api.alquran.cloud/v1/surah/' + surah + '/' + source} target="_blank" rel="noreferrer">AlQuran Cloud · {sourceInfo.name}</a></p>
+    </div>}
     {loading && <p className="empty" role="status">جارٍ تحميل الآيات والتفسير…</p>}
     {error && <div className="error" role="alert"><span>{error}</span><button className="primary small" onClick={() => setRetry(retry + 1)}>إعادة تحميل التفسير</button></div>}
-    {current && <article className="tafsir-ayah-card">
+    {mode === 'ayah' && current && <article className="tafsir-ayah-card">
       <div className="tafsir-reference">سورة {surahNames[surah - 1]} · الآية {ayah.toLocaleString('ar-EG')}</div>
       <p className="religious tafsir-verse">{current.verse}</p>
       <div className="tafsir-explanation"><h3>{sourceInfo.name}</h3><p>{current.explanation}</p></div>

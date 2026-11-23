@@ -1,6 +1,6 @@
 [
   {
-    "name": "Sourced content, favorites, and dhikr counters",
+    "name": "Sourced hadith encyclopedia, favorites and dhikr",
     "viewport": "mobile",
     "sanity": true,
     "description": "Users find sourced hadith and duas, retain and remove favorites, and persist or reset dhikr counts on mobile.",
@@ -16,21 +16,18 @@
       "dua favorites",
       "hadith explanatory summaries",
       "explanation expand/collapse",
-      "hadith explanation source links"
+      "hadith explanation source links",
+      "sahih grade policy",
+      "full source explanations and benefits",
+      "topic and attribution filters",
+      "encyclopedia favorites"
     ],
     "steps": [
-      "Open الأحاديث النبوية from the sidebar.",
-      "Search for الكلمة الطيبة and verify the matching sourced excerpt.",
-      "Click its حفظ في المفضلة button.",
-      "Open المفضلة and verify الكلمة الطيبة is present.",
-      "Reload, open المفضلة and verify it remains.",
-      "Remove that favorite, reload and verify it is absent from المفضلة.",
-      "Open the mobile menu and choose الأدعية والأذكار.",
-      "Choose بعد الصلاة and increment التسبيح بعد الصلاة twice.",
-      "Reload, return to that category, and verify the count is ٢ / ٣٣.",
-      "Reset that counter and verify ٠ / ٣٣.",
-      "Choose أدعية قرآنية, save طلب العلم, and verify it in المفضلة with سورة طه citation.",
-      "Open الأحاديث النبوية, find الرفق زينة, click شرح الحديث and verify the attributed summary and link to hadeethenc.com/ar/browse/hadith/5796. Collapse and reopen the explanation."
+      "Open الأحاديث النبوية. Verify the imported count, snapshot date and explicit source scope. Search خيركم من تعلم القرآن in البحث في مكتبة الأحاديث.",
+      "Open شرح الحديث وأحكامه. Verify صحيح grade, Bukhari attribution, full source explanation, benefits and references, and original link hadeethenc.com/ar/browse/hadith/5913.",
+      "Save the hadith and open المفضلة. Reload and verify it remains, then remove and reload to verify it disappears.",
+      "Test موضوع الحديث and مصدر تخريج الحديث, a nonexistent query, clearing the query, and عرض المزيد من الأحاديث.",
+      "Open الأدعية والأذكار, choose بعد الصلاة and increment التسبيح twice. Reload and verify ٢ / ٣٣, reset to zero. Save طلب العلم and verify its source in المفضلة."
     ],
     "expected": "The selected hadith is searchable, displays its Bukhari citation, survives reload when saved, and remains absent after removal. The menu works on mobile, the count survives reload and resets to zero, and the saved dua is present with its source."
   },
@@ -73,7 +70,11 @@
       "undo and last-verse boundary",
       "home memorization resume",
       "active recording surah selector",
-      "storage write failure"
+      "storage write failure",
+      "604-page mushaf",
+      "exact reading bookmark",
+      "bookmark persistence independent of memorization",
+      "whole surah tafsir"
     ],
     "steps": [
       "Open القرآن الكريم. If the provider is unavailable, verify the visible error and إعادة المحاولة; retry once and use the offline سورة الفاتحة to complete the reader checks.",
@@ -96,13 +97,17 @@
       "Start Al-Fatiha with a selected reciter. Verify Media Session metadata shows the same surah and reciter, and invoke registered play, pause, seek, next and previous actions through a browser harness; verify the audio follows and explicit pause is not undone.",
       "Bring a second browser tab to the foreground for several seconds, then return. Verify the original audio element remains mounted and its playhead advanced. Repeat while paused and verify it stays paused. This does not substitute for a physical Android screen-lock test.",
       "Open الخلفية وشاشة القفل, verify the Android guidance and browser limitations, then close it without stopping audio.",
-      "Open القرآن الكريم, read سورة الفاتحة, and click تفسير الآية 2. Verify the view identifies Al-Fatiha verse 2, shows its Quran text, and attributes التفسير الميسّر to مجمع الملك فهد.",
       "Choose تفسير الجلالين and verify the source and explanatory text change while the verse stays aligned; use next/previous verse and قراءة السورة.",
       "Open Al-Fatiha in الحفظ آية بآية. Mark verse 1 with أتممت حفظ الآية; verify verse 2 and 1/7 progress. Move forward once without confirming and verify verse 3 and unchanged 1/7.",
       "Reload, select متابعة الحفظ on home, and verify verse 3 resumes. Select verse 1, cancel its memorization confirmation, and verify 0/7 with verse 1 retained. Hide and reveal the verse.",
       "Choose verse 7 and mark it; verify there is no verse 8 and moving forward is disabled. Complete remaining verses and verify full-surah completion. Visit a second surah and confirm independent progress.",
       "Block localStorage.setItem for the progress key and verify a visible persistence warning after changing verse.",
-      "Start a reader and choose a different surah via اختيار سورة من المشغل. Verify the audio source changes but reader and recording remain the same. Return home and switch سورة مشغل الرئيسية while playing; verify the new surah starts."
+      "Start a reader and choose a different surah via اختيار سورة من المشغل. Verify the audio source changes but reader and recording remain the same. Return home and switch سورة مشغل الرئيسية while playing; verify the new surah starts.",
+      "Open Al-Baqarah. Verify the first displayed mushaf page is 2 and contains verses 1–5. Move to page 3 and verify it starts at verse 6.",
+      "Mark Al-Baqarah verse 8 with its numbered button. Verify the highlight and mark caption. Reload and use متابعة القراءة; verify page 3 and the same highlighted verse. Move to page 4 and return to the explicit mark; ensure it remains on page 3.",
+      "Enter page 604 and verify Al-Ikhlas, Al-Falaq and Al-Nas share the page. Next page is disabled. Reject page 605 and zero without changing the page.",
+      "Open تفسير القرآن, select Al-Fatiha and تفسير السورة كاملة. Verify seven verse-and-explanation cards; switch Muyassar/Jalalayn. Select Al-Nas and verify six cards, then switch to verse mode.",
+      "Switch into الحفظ آية بآية, confirm one verse and verify the independent reading mark is not changed."
     ],
     "expected": "A successfully loaded surah displays verse numbers and is resumed after reload. Font controls change the text size. Any provider failure has a visible explanation and retry button, and Al-Fatiha remains readable. Real audio loads and advances, controls work, source/reciter labels match, and the same player survives page navigation. The embedded home card controls the same single audio element, exposes real progress, and speed, repeat, seek, and timer expiry work. Memorization position and confirmed verses survive reload independently for each surah, no verse is marked by navigation alone, and the last-verse boundary is respected."
   },
@@ -154,7 +159,7 @@
       "search filtering and empty states"
     ],
     "steps": [
-      "Open الأحاديث النبوية and search zzznonexistent. Verify لا توجد نتائج, then clear the search and verify results return.",
+      "Open الأحاديث النبوية, search zzznonexistent using البحث في مكتبة الأحاديث, verify empty state, clear it and verify results return.",
       "Open القرآن الكريم. If its full index loads, search zzznonexistent and verify the no-surah message.",
       "Click ثبّت سكينة على جهازك. Verify either the browser install prompt or the سكينة على موبايلك dialog.",
       "If the dialog is shown, verify Android Chrome instructions and that the app is described as a web app, then close it.",
@@ -167,7 +172,7 @@
       "On a 375px-wide viewport, use التنقل الرئيسي to open الرئيسية, verify the home player card and its selectors fit without horizontal overflow, start and pause a surah from the card, then navigate through القرآن and الأذكار using the bottom navigation. Confirm buttons are not covered by the hosting badge.",
       "Use بحث in التنقل الرئيسي. Search الحصري and open محمود خليل الحصري; verify the selected reciter in the audio library.",
       "Return to بحث, enter الإخلاص, choose السور and open قراءة السورة. Verify Al-Ikhlas is shown.",
-      "Return to بحث, search الرفق, choose الأحاديث and open قراءة الحديث وشرحه; verify the correct hadith and expanded explanation.",
+      "Search خيركم in البحث الشامل, choose الأحاديث and open قراءة الحديث وشرحه; verify source record 5913 and expanded explanation.",
       "Return to بحث, enter الرحمة, choose التفاسير and submit. Verify real sourced explanation matches and open one via قراءة الآية وتفسيرها; verify matching surah/ayah.",
       "Type a new query quickly while a tafsir request is in flight and verify old matches do not replace the new query results. Search zzznonexistent under القرّاء and verify an explicit empty state."
     ],
@@ -183,7 +188,8 @@
       "media error and retry",
       "tafsir fetch error/retry",
       "tafsir search error retains local matches",
-      "unsupported media session fallback"
+      "unsupported media session fallback",
+      "hadith chunk failure and retry"
     ],
     "steps": [
       "Open القرّاء والتلاوات and click تحديث الفهرس; verify the resulting success message and list.",
@@ -192,7 +198,8 @@
       "Restore the network, retry the audio, and verify duration is positive and playback progresses.",
       "Block api.alquran.cloud with browser route interception. Open a tafsir that was not previously cached; verify error and إعادة تحميل التفسير. Restore the network and retry, then verify real text appears.",
       "Block the tafsir search endpoint and search القرآن from البحث الشامل. Verify the remote error is explicit and local surah/hadith results remain available.",
-      "In a separate fresh browser context with mediaSession unavailable, start a surah and verify normal playback still works and background help accurately states that lock-screen buttons are unavailable."
+      "In a separate fresh browser context with mediaSession unavailable, start a surah and verify normal playback still works and background help accurately states that lock-screen buttons are unavailable.",
+      "Block a not-yet-loaded data/hadith/chunk- response. Expand its hadith and verify the visible error and إعادة تحميل شرح الحديث; restore the response, retry and verify source content appears."
     ],
     "expected": "Refresh failure retains the complete saved catalog. Audio failure is visible and retry works after the network is restored."
   }

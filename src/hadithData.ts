@@ -17,9 +17,10 @@ async function resource(path: string) {
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), 20000);
   try {
-    const response = await fetch(new URL('data/hadith/' + path, document.baseURI).href, { signal: controller.signal });
+    const response = await fetch(new URL('data/hadith/' + path + '.gz', document.baseURI).href, { signal: controller.signal });
     if (!response.ok) throw new Error('hadith-resource');
-    return await response.json();
+    if (!response.body) throw new Error('empty-body');
+    return await new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).json();
   } finally { window.clearTimeout(timer); }
 }
 export function getHadithIndex() {

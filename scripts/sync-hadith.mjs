@@ -1,3 +1,4 @@
+import { gzipSync } from 'node:zlib';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { acceptedGrades, isSahihGrade } from './hadith-policy.mjs';
@@ -99,7 +100,7 @@ for (let offset = 0; offset < selected.length; offset += 50) {
       reference: typeof item.reference === 'string' ? item.reference : '',
     };
   }
-  await fs.writeFile(path.join(output, chunk), JSON.stringify(details));
+  await fs.writeFile(path.join(output, chunk + '.gz'), gzipSync(JSON.stringify(details), { level: 9 }));
 }
 const index = {
   generatedAt: new Date().toISOString(), source: 'https://hadeethenc.com/ar/home',
@@ -108,5 +109,5 @@ const index = {
   acceptedGrades: [...acceptedGrades],
   categories: roots.map(c => ({ id: String(c.id), title: c.title })), entries,
 };
-await fs.writeFile(path.join(output, 'index.json'), JSON.stringify(index));
+await fs.writeFile(path.join(output, 'index.json.gz'), gzipSync(JSON.stringify(index), { level: 9 }));
 console.log('COMPLETE', JSON.stringify({ scanned: records.length, selected: entries.length }));

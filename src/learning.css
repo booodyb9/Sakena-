@@ -137,3 +137,40 @@
   .reference-theme .continue-card > .primary { flex: 1 1 auto; justify-content: center; }
   .in-player-surah { flex: 1 1 100%; justify-content: center; }
 }
+
+.library-scope { font-size:14px; line-height:2; color:#756b51; margin:0 0 22px; }
+.hadith-library-filters { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:15px 0; }
+.hadith-library-filters label { font-size:14px; display:grid; gap:8px; color:#405b3b; }
+.hadith-library-filters select { width:100%; min-width:0; border:1px solid #d9caa4; border-radius:10px; padding:12px; background:#fffaf0; color:#34583b; }
+.hadith-library-list { display:grid; gap:20px; }
+.hadith-full-details { margin-top:20px; border-top:1px solid #dacda8; padding-top:20px; font-size:16px; line-height:2; color:#465840; }
+.hadith-full-details h4 { color:#165137; margin:18px 0 8px; }
+.hadith-full-details ul { padding-inline-start:25px; }
+.hadith-full-details li { margin-bottom:10px; }
+.hadith-full-details dt { font-weight:700; }
+.hadith-full-details dd { margin:0 0 12px; }
+.hadith-references { white-space:pre-line; }
+.hadith-library .entry-card > h3 { font-size:18px; line-height:1.9; }
+.tafsir-surah-list { display:grid; gap:20px; }
+.tafsir-surah-list .focused-ayah { border-color:#487349; box-shadow:0 0 0 2px #48734922; }
+.mushaf-page-controls { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:20px 0; scroll-margin-top:85px; }
+.mushaf-jump { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:15px; }
+.mushaf-jump label { display:flex; gap:9px; align-items:center; font-size:14px; }
+.mushaf-jump input { width:75px; border:1px solid #c7b37a; border-radius:8px; padding:9px; background:#fffaf1; color:#164d34; }
+.mushaf-paper { padding:30px 26px; border:double 5px #cfbd8c; border-radius:14px; background:#fffcf2; font-family:'Amiri',serif; line-height:2.65; text-align:justify; color:#1c432c; }
+.mushaf-surah-title { display:block; text-align:center; margin:0 0 20px; padding:10px; border-block:1px solid #d3bc7c; background:#e9ead4; font-size:24px; }
+.mushaf-verse { border-radius:5px; scroll-margin-top:120px; }
+.mushaf-verse.reading-mark { background:#e5d9a6; box-shadow:0 2px #aa8530; }
+.mushaf-paper .ayah-number { display:inline-flex; align-items:center; gap:3px; min-width:34px; min-height:34px; margin:0 3px; border:1px solid #bba265; border-radius:50%; color:#255b3b; font-size:16px; vertical-align:middle; }
+.mushaf-paper .ayah-number[aria-pressed="true"] { border-color:#175739; background:#175739; color:#fff7db; }
+.mushaf-mark-caption { display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:16px; background:#e5e9ce; border-radius:12px; margin-top:15px; font-size:14px; }
+.mushaf-note { font-size:14px; line-height:2; color:#7b735a; margin-bottom:20px; }
+@media(max-width:500px) {
+  .hadith-library-filters { grid-template-columns:1fr; }
+  .hadith-full-details { font-size:16px; }
+  .hadith-library .learning-intro { align-items:flex-start; }
+  .hadith-library .learning-intro h2 { font-size:23px; }
+  .mushaf-paper { padding:20px 12px; line-height:2.5; }
+  .mushaf-page-controls .text-button { font-size:12px; gap:2px; }
+  .mushaf-page-controls strong { font-size:13px; white-space:nowrap; }
+}

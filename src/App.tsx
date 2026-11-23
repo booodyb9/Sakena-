@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { Coordinates, CalculationMethod, PrayerTimes, Madhab } from 'adhan';
 import AudioLibrary from './AudioLibrary';
+import { isNativeAudio } from './nativeAudio';
 import QuranArtwork, { MosqueBackdrop, CornerOrnament } from './QuranArtwork';
 import './reference-theme.css';
 import './learning.css';
@@ -210,6 +211,11 @@ export default function App() {
   const [installPrompt, setInstallPrompt] = useState<InstallPrompt | null>(
     null
   );
+  useEffect(() => {
+    const back = () => { setPage('home'); setSelected(null); setMenu(false); window.scrollTo({ top: 0 }); };
+    window.addEventListener('sakina-back', back);
+    return () => window.removeEventListener('sakina-back', back);
+  }, []);
   const requestId = useRef(0);
   const city = cities[cityIndex];
   const parts = new Intl.DateTimeFormat('en-CA', {
@@ -292,7 +298,7 @@ export default function App() {
       setInstallPrompt(event as InstallPrompt);
     };
     window.addEventListener('beforeinstallprompt', handler);
-    if ('serviceWorker' in navigator)
+    if ('serviceWorker' in navigator && !isNativeAudio())
       navigator.serviceWorker.register('./sw.js').catch(() => {});
     return () => {
       window.clearInterval(timer);
@@ -591,7 +597,7 @@ export default function App() {
           </p>
           <small>سورة الرعد • الآية ٢٨</small>
         </div>
-        <button className="install-button" onClick={install}>
+        <button className="install-button" style={isNativeAudio() ? { display: 'none' } : undefined} onClick={install}>
           <Download size={19} />
           <span>
             ثبّت سكينة على جهازك<small>قريب منك، في كل وقت</small>

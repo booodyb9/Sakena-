@@ -86,3 +86,8 @@
   .player-error .text-button { flex-shrink: 0; font-size: 10px; }
   .recordings-panel, .reciters-panel { padding: 17px; }
 }
+
+.player-center audio[hidden] { display: none; }
+.native-progress { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 11px; color: #426139; }
+.native-progress input { flex: 1; min-width: 100px; accent-color: #315f46; }
+.native-progress span { direction: ltr; }

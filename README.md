@@ -61,3 +61,12 @@ npm run preview
 اضغط رقم آية لحفظ علامة الوقوف عندها. تظهر الآية مميزة، وتعود إليها من «متابعة القراءة» أو «العودة لعلامة الوقوف». تُحفظ آخر صفحة عند الانتقال بين الصفحات دون تغيير علامة الآية اليدوية، وهما منفصلان عن تقدم الحفظ.
 
 تحديث النص وتقسيم الصفحات: `npm run sync:quran`. ملفات البيانات مضغوطة بصيغة gzip في `public/data/` وتفك في المتصفح عند الطلب باستخدام DecompressionStream، المتاحة في متصفحات أندرويد الحديثة. النصوص المفتوحة قد تبقى في ذاكرة التخزين دون اتصال، حسب إعدادات المتصفح؛ لا يوجد ادعاء بتنزيل كل التسجيلات الصوتية.
+
+
+## Android APK
+
+The **Android APK** GitHub Actions workflow builds on every push to main and publishes an installable, debug-signed APK as a GitHub prerelease. Download `sakena-debug.apk` from Releases. Android 8 (API 26) or newer and an updated Android System WebView are required. This is a testing build, not a Google Play production release. A cached debug keystore improves upgrade continuity, but reinstalling may be necessary if the cache expires; uninstalling clears local bookmarks.
+
+The APK bundles the web UI, 604-page Quran data, and 3,243 sourced hadith records. Tafsir and streamed recitations require Internet. Native MediaPlayer runs in a media-playback foreground service with a media notification, wake lock, audio focus, queue navigation, speed, repeat and sleep timer. Screen-off playback remains subject to the device's battery restrictions; force-stopping the app stops playback. Prayer alerts still require the interface to be open; this build does not add scheduled Android prayer alarms.
+
+Local Android build: install Java 17, Gradle 8.10.2 and Android SDK 35, run `npm ci && npm run build`, copy `dist/.` into `android/app/src/main/assets/`, then run `gradle -p android :app:assembleDebug`.

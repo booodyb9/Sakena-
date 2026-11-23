@@ -6,6 +6,7 @@ import './audio.css';
 import { createPortal } from 'react-dom';
 import QuranArtwork from './QuranArtwork';
 import useBackgroundAudio from './useBackgroundAudio';
+import { useNativeAudio, nativeCommand, isNativeAudio } from './nativeAudio';
 
 type Track = { reciterId: number; moshafId: number; surah: number };
 const number = (n: number) => n.toLocaleString('ar-EG');
@@ -71,6 +72,7 @@ export default function AudioLibrary({ visible, home = false, homeTarget, onBrow
   const [backgroundHelp, setBackgroundHelp] = useState(false);
   const helpDialogRef = useRef<HTMLDialogElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  useNativeAudio(audioRef);
   const playRequest = useRef(0);
   const refreshRequest = useRef<AbortController | null>(null);
   const reciter = catalog.find(r => r.id === reciterId) || catalog[0];
@@ -87,6 +89,36 @@ export default function AudioLibrary({ visible, home = false, homeTarget, onBrow
     normalize(surahNames[id - 1] + id + number(id)).includes(normalize(surahQuery))
   );
 
+  useEffect(() => {
+    if (!isNativeAudio() || !track || !trackMoshaf) return;
+    nativeCommand({
+      action: 'configure', title: 'سورة ' + surahNames[track.surah - 1], artist: trackReciter?.name || '',
+      autoNext, sleepAt,
+      queue: ids(trackMoshaf).map(surah => ({
+        reciterId: track.reciterId, moshafId: track.moshafId, surah,
+        url: mediaUrl(trackMoshaf, surah), title: 'سورة ' + surahNames[surah - 1], artist: trackReciter?.name || '',
+      })),
+    });
+  }, [track, trackMoshaf, trackReciter, autoNext, sleepAt]);
+  useEffect(() => {
+    if (!isNativeAudio()) return;
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent).detail;
+      const candidate = detail?.track;
+      if (typeof detail?.loop === 'boolean') setRepeat(detail.loop);
+      if (typeof detail?.rate === 'number') setSpeed(detail.rate);
+      if (typeof detail?.autoNext === 'boolean') setAutoNext(detail.autoNext);
+      if (typeof detail?.sleepAt === 'number') setSleepAt(detail.sleepAt);
+      if (!candidate) return;
+      const reader = catalog.find(r => r.id === candidate.reciterId);
+      const recording = reader?.moshaf.find(m => m.id === candidate.moshafId);
+      if (!recording || !ids(recording).includes(candidate.surah) || mediaUrl(recording, candidate.surah) !== detail.url) return;
+      setTrack(previous => previous?.reciterId === candidate.reciterId && previous.moshafId === candidate.moshafId && previous.surah === candidate.surah
+        ? previous : { reciterId: candidate.reciterId, moshafId: candidate.moshafId, surah: candidate.surah });
+    };
+    window.addEventListener('sakina-native-state', handler);
+    return () => window.removeEventListener('sakina-native-state', handler);
+  }, [catalog]);
   useBackgroundAudio(audioRef, track ? {
     key: track.reciterId + ':' + track.moshafId + ':' + track.surah,
     title: 'سورة ' + surahNames[track.surah - 1],
@@ -382,7 +414,7 @@ export default function AudioLibrary({ visible, home = false, homeTarget, onBrow
           <button className="icon-button" disabled={position < 0 || position >= trackList.length - 1} aria-label="السورة التالية" onClick={() => nextTrack(1)}><SkipBack size={21} /></button>
           <button className="icon-button" aria-label="إيقاف التلاوة من البداية" onClick={stop}><Square size={17} /></button>
         </div>
-        <audio ref={audioRef} controls preload="auto" loop={repeat} aria-label="الصوت وتقدم التلاوة"
+        <audio ref={audioRef} controls={!isNativeAudio()} hidden={isNativeAudio()} preload="auto" loop={repeat} aria-label="الصوت وتقدم التلاوة"
           onTimeUpdate={e => setElapsed(e.currentTarget.currentTime)}
           onLoadedMetadata={e => { setDuration(Number.isFinite(e.currentTarget.duration) ? e.currentTarget.duration : 0); e.currentTarget.playbackRate = speed; }}
           onDurationChange={e => setDuration(Number.isFinite(e.currentTarget.duration) ? e.currentTarget.duration : 0)}
@@ -394,6 +426,12 @@ export default function AudioLibrary({ visible, home = false, homeTarget, onBrow
           onError={() => { setPlaying(false); setStatus(''); setMediaError('تعذّر تحميل الصوت من المصدر. تحقق من الإنترنت أو اختر تسجيلًا آخر.'); }}
         />
       </div>
+      {isNativeAudio() && <label className="native-progress">تقدم التلاوة
+        <input aria-label="تقدم التلاوة على أندرويد" type="range" min="0" max={Math.max(1, duration)} step="1"
+          value={Math.min(elapsed, duration || 0)} disabled={!duration}
+          onChange={e => { if (audioRef.current) audioRef.current.currentTime = Number(e.target.value); }} />
+        <span dir="ltr">{timeLabel(elapsed)} / {timeLabel(duration)}</span>
+      </label>}
       <div className="player-options">
         <label className="in-player-surah">اختيار سورة
           <select aria-label="اختيار سورة من المشغل" value={track?.surah || ''} onChange={e => {
@@ -421,7 +459,7 @@ export default function AudioLibrary({ visible, home = false, homeTarget, onBrow
         <li>من إعدادات الهاتف، اسمح للتطبيق أو Chrome بالنشاط في الخلفية. قد تجد الخيار تحت البطارية باسم «غير مقيّد»، حسب جهازك.</li>
         <li>اترك التبويب مفتوحًا وتأكد من اتصال الإنترنت. لا تفرض إيقاف المتصفح.</li>
       </ol>
-      <p className="background-limitation">نسخة الويب لا تستطيع منع النظام من تعليق المتصفح أو إغلاقه؛ لذلك استمرار الصوت مع إطفاء الشاشة يعتمد أيضًا على جهازك وإعداداته. مؤقت النوم يتوقف حسب تشغيل المتصفح وقد يتأخر في الخلفية.</p>
+      <p className="background-limitation">{isNativeAudio() ? 'نسخة أندرويد تشغّل التلاوة بخدمة وسائط أصلية مع أزرار الإشعار وشاشة القفل. يظل الاتصال بالإنترنت مطلوبًا، وقد يوقف النظام التطبيق عند فرض الإيقاف.' : 'نسخة الويب لا تستطيع منع النظام من تعليق المتصفح أو إغلاقه؛ لذلك استمرار الصوت مع إطفاء الشاشة يعتمد أيضًا على جهازك وإعداداته. مؤقت النوم يتوقف حسب تشغيل المتصفح وقد يتأخر في الخلفية.'}</p>
       <button className="primary" onClick={() => setBackgroundHelp(false)}>فهمت</button>
     </dialog>
   </div>;

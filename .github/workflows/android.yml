@@ -1,0 +1,58 @@
+name: Android APK
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      BUILD_NUMBER: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck && npm test && npm run build
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: sakena-debug-keystore-v1
+      - name: Bundle web application
+        run: |
+          mkdir -p android/app/src/main/assets
+          cp -R dist/. android/app/src/main/assets/
+      - name: Build installable APK
+        run: gradle -p android :app:assembleDebug --no-daemon
+      - name: Prepare download
+        run: |
+          mkdir -p apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk apk/sakena-debug.apk
+          cd apk
+          sha256sum sakena-debug.apk > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sakena-Android-APK
+          path: apk/*
+          retention-days: 30
+      - name: Publish APK download
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "android-${GITHUB_RUN_NUMBER}" apk/* --target "$GITHUB_SHA" --prerelease --title "سكينة Android ${GITHUB_RUN_NUMBER}" --notes "نسخة أندرويد تجريبية موقعة للتثبيت المباشر (Android 8 أو أحدث). تتضمن المصحف في 604 صفحات، وعلامة الوقوف، ومكتبة الأحاديث، ومشغل صوت أصلي. التلاوات والتفاسير تحتاج إلى اتصال بالإنترنت. هذه نسخة debug وليست إصدار Google Play."

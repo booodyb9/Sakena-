@@ -419,7 +419,7 @@ export default function AudioLibrary({ visible, home = false, homeTarget, onBrow
         </div>
         <audio ref={audioRef} controls={!isNativeAudio()} hidden={isNativeAudio()} preload="auto" loop={repeat} aria-label="الصوت وتقدم التلاوة"
           onTimeUpdate={e => setElapsed(e.currentTarget.currentTime)}
-          onLoadedMetadata={e => { setDuration(Number.isFinite(e.currentTarget.duration) ? e.currentTarget.duration : 0); e.currentTarget.playbackRate = speed; }}
+          onLoadedMetadata={e => { setDuration(Number.isFinite(e.currentTarget.duration) ? e.currentTarget.duration : 0); if (!isNativeAudio()) e.currentTarget.playbackRate = speed; }}
           onDurationChange={e => setDuration(Number.isFinite(e.currentTarget.duration) ? e.currentTarget.duration : 0)}
           onPlaying={() => { setPlaying(true); setMediaError(''); setStatus(''); }}
           onPause={() => setPlaying(false)}

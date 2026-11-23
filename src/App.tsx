@@ -363,7 +363,9 @@ export default function App() {
     setLoading(true);
     setQError('');
     try {
-      const data = await getQuran('surah');
+      const data = await fetch(new URL('data/surahs.json', document.baseURI))
+        .then(response => { if (!response.ok) throw new Error('index'); return response.json(); })
+        .catch(() => getQuran('surah'));
       if (!Array.isArray(data) || data.length !== 114) throw new Error('data');
       if (id === requestId.current) {
         setSurahs(data);
@@ -1023,8 +1025,7 @@ export default function App() {
                           </div>
                         )}
                       <p className="source centered">
-                        فهرس القرآن ونصوص السور: AlQuran Cloud. تحتاج السورة إلى
-                        الإنترنت عند فتحها لأول مرة.
+                        فهرس القرآن ونصوص السور: AlQuran Cloud. المصحف وفهرس السور مضمّنان في نسخة أندرويد؛ التلاوات والتفاسير تحتاج إلى الإنترنت.
                       </p>
                     </>
                   )}

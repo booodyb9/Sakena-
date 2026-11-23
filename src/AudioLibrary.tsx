@@ -113,7 +113,7 @@ export default function AudioLibrary({ visible, home = false, homeTarget, onBrow
       const reader = catalog.find(r => r.id === candidate.reciterId);
       const recording = reader?.moshaf.find(m => m.id === candidate.moshafId);
       if (!recording || !ids(recording).includes(candidate.surah) || mediaUrl(recording, candidate.surah) !== detail.url) return;
-      setTrack(previous => previous?.reciterId === candidate.reciterId && previous.moshafId === candidate.moshafId && previous.surah === candidate.surah
+      setTrack(previous => previous && previous.reciterId === candidate.reciterId && previous.moshafId === candidate.moshafId && previous.surah === candidate.surah
         ? previous : { reciterId: candidate.reciterId, moshafId: candidate.moshafId, surah: candidate.surah });
     };
     window.addEventListener('sakina-native-state', handler);

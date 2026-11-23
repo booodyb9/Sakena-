@@ -90,6 +90,9 @@ export default function AudioLibrary({ visible, home = false, homeTarget, onBrow
   );
 
   useEffect(() => {
+    if (isNativeAudio() && track) nativeCommand({ action: 'loop', loop: repeat });
+  }, [repeat, track]);
+  useEffect(() => {
     if (!isNativeAudio() || !track || !trackMoshaf) return;
     nativeCommand({
       action: 'configure', title: 'سورة ' + surahNames[track.surah - 1], artist: trackReciter?.name || '',

@@ -1,0 +1,20 @@
+{
+  "name": "سكينة",
+  "short_name": "سكينة",
+  "description": "رفيق رحلتك الإيمانية",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#194b3c",
+  "background_color": "#f8f9f6",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+.sidebar { overflow-y: auto; }
+.audio-entry-button {
+  display: inline-flex; align-items: center; gap: 9px; background: transparent;
+  color: #f0e4ba; padding: 12px 0 0; font-size: 12px;
+}
+.audio-intro {
+  display: flex; align-items: center; gap: 20px; background: #eaf1e6;
+  border: 1px solid #dce6d2; border-radius: 14px; padding: 27px;
+}
+.audio-intro-icon { color: #497352; flex-shrink: 0; }
+.audio-intro h2 { font-size: 23px; margin-bottom: 8px; }
+.audio-intro p { font-size: 13px; color: #76886c; line-height: 1.9; }
+.audio-count { margin-right: auto; white-space: nowrap; color: #416842; font-size: 15px; }
+.audio-source-row { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin: 16px 0 22px; font-size: 11px; color: #8b9781; }
+.audio-layout { display: grid; grid-template-columns: minmax(240px, .8fr) minmax(0, 1.2fr); gap: 24px; align-items: start; }
+.reciters-panel, .recordings-panel { background: white; border: 1px solid #e2e8dc; border-radius: 13px; padding: 20px; min-width: 0; }
+.reciters-panel .search-box { margin-bottom: 12px; }
+.reciters-count { font-size: 11px; color: #84957a; margin-bottom: 14px; }
+.reciters-list { max-height: 600px; overflow-y: auto; scrollbar-width: thin; padding-left: 4px; }
+.reciter-choice { display: flex; gap: 11px; align-items: center; background: transparent; width: 100%; text-align: right; padding: 14px 11px; border-radius: 9px; margin-bottom: 5px; color: #496144; }
+.reciter-choice.chosen { background: #edf4e7; box-shadow: inset -3px 0 #628359; }
+.reciter-avatar { width: 37px; height: 37px; background: #f5f5eb; color: #a89b6b; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; font-family: 'Amiri', serif; font-size: 24px; }
+.reciter-choice strong { font-size: 13px; font-weight: 500; }
+.reciter-choice small { display: block; color: #9aa58e; font-size: 9px; margin-top: 5px; }
+.reciter-choice > svg { margin-right: auto; flex-shrink: 0; color: #8da27c; }
+.reciter-heading { display: flex; align-items: center; gap: 13px; color: #597747; margin: 2px 0 25px; }
+.reciter-heading h2 { font-size: 22px; margin-top: 4px; }
+.reciter-heading small { font-size: 11px; color: #99a38c; }
+.recording-select { display: block; font-size: 12px; color: #859477; }
+.recording-select select { display: block; width: 100%; max-width: 100%; min-width: 0; background: #fafbf6; color: #405c35; border: 1px solid #dde5d4; border-radius: 8px; padding: 12px 8px; margin: 8px 0 22px; font-size: 12px; }
+.available-surahs { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+.available-surahs strong { font-size: 13px; font-weight: 500; color: #536f43; }
+.available-surahs small { font-size: 10px; color: #97a18a; }
+.audio-surah-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.audio-surah { display: flex; align-items: center; gap: 9px; background: #fafbf7; padding: 13px 10px; border: 1px solid #e8ecdf; border-radius: 8px; text-align: right; color: #4d6740; font-size: 12px; }
+.audio-surah.current { background: #eaf2df; border-color: #bbcea9; }
+.audio-surah > svg { margin-right: auto; flex-shrink: 0; color: #819967; }
+.audio-surah-id { font-size: 10px; color: #9daa8c; min-width: 18px; }
+.audio-host.has-track { padding-bottom: 245px; }
+.audio-player { position: fixed; z-index: 20; right: 272px; left: 26px; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); padding: 18px 24px; display: grid; grid-template-columns: minmax(170px, 1fr) minmax(240px, 1.5fr) minmax(170px, 1fr); align-items: center; gap: 16px; border: 1px solid #dbe3d2; background: #fffef8fa; box-shadow: 0 8px 40px #1b392425; border-radius: 15px; backdrop-filter: blur(15px); }
+.audio-player[hidden], .audio-library[hidden] { display: none; }
+.now-playing { display: flex; align-items: center; gap: 11px; }
+.now-playing strong, .now-playing span:not(.round-icon), .now-playing small { display: block; }
+.now-playing strong { font-size: 15px; color: #426139; }
+.now-playing div > span { font-size: 11px; color: #7a8e6c; margin-top: 5px; }
+.now-playing small { font-size: 9px; color: #9aa58c; margin-top: 4px; }
+.player-center { min-width: 0; }
+.player-buttons { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 5px; }
+.audio-play-button { display: grid; place-items: center; background: #315f46; color: #f6f3df; width: 38px; height: 38px; border-radius: 50%; }
+.player-center audio { width: 100%; height: 35px; display: block; }
+.player-options { display: flex; flex-direction: column; gap: 13px; font-size: 10px; color: #81936f; }
+.player-options label { display: flex; gap: 8px; align-items: center; }
+.player-options input { accent-color: #3b6848; }
+.player-error, .player-status { grid-column: 1 / -1; font-size: 11px; }
+.player-error { display: flex; align-items: center; gap: 12px; justify-content: space-between; color: #997137; background: #faf1df; border-radius: 7px; padding: 9px 12px; }
+.player-status { text-align: center; color: #8c9c7b; }
+@media (max-width: 1200px) {
+  .audio-player { right: 240px; grid-template-columns: minmax(150px, 1fr) minmax(220px, 1.4fr); padding: 16px; }
+  .player-options { grid-column: 1 / -1; flex-direction: row; justify-content: center; }
+  .audio-layout { gap: 15px; grid-template-columns: minmax(220px, 1fr) minmax(0, 1.2fr); }
+  .audio-surah-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 950px) {
+  .audio-layout { grid-template-columns: 1fr; }
+  .reciters-list { max-height: 260px; }
+  .audio-surah-grid { grid-template-columns: 1fr 1fr; }
+  .audio-player { right: 220px; left: 15px; }
+  .now-playing .round-icon { display: none; }
+}
+@media (max-width: 700px) {
+  .audio-intro { padding: 22px 18px; gap: 13px; flex-wrap: wrap; }
+  .audio-intro > div { flex: 1; }
+  .audio-intro h2 { font-size: 21px; }
+  .audio-intro p { font-size: 11px; }
+  .audio-count { width: 100%; padding-right: 43px; font-size: 13px; }
+  .audio-source-row { align-items: start; font-size: 10px; }
+  .audio-source-row .text-button { white-space: nowrap; }
+  .audio-player { right: 8px; left: 8px; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); grid-template-columns: 1fr; gap: 9px; padding: 13px; }
+  .now-playing { justify-content: center; text-align: center; }
+  .now-playing strong, .now-playing div > span { display: inline; margin-left: 7px; font-size: 12px; }
+  .now-playing small { font-size: 9px; margin-top: 3px; }
+  .player-buttons { gap: 18px; }
+  .player-options { font-size: 9px; gap: 18px; }
+  .audio-host.has-track { padding-bottom: 300px; }
+  .player-error { align-items: start; }
+  .player-error .text-button { flex-shrink: 0; font-size: 10px; }
+  .recordings-panel, .reciters-panel { padding: 17px; }
+}

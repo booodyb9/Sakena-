@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Search, Headphones, BookOpen, ArrowLeft } from 'lucide-react';
 import { initialCatalog, surahNames } from './audioCatalog';
 import type { Reciter } from './audioCatalog';
-import { hadith } from './religiousContent';
+import { useHadithIndex } from './hadithData';
 import { fetchQuranResource, normalizeSearch, tafsirSources } from './tafsirService';
 import type { TafsirMatch } from './tafsirService';
 
@@ -17,6 +17,7 @@ function match(text: string, query: string) {
   return normalizeSearch(text).replace(/\s/g, '').includes(normalizeSearch(query).replace(/\s/g, ''));
 }
 export default function GlobalSearch({ onReciter, onSurah, onTafsir, onHadith }: Props) {
+  const { index: hadithIndex, error: hadithError, retry: retryHadith } = useHadithIndex();
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState('الكل');
   const [source, setSource] = useState('ar.muyassar');
@@ -39,7 +40,7 @@ export default function GlobalSearch({ onReciter, onSurah, onTafsir, onHadith }:
   const readerResults = normalized ? readers.filter(r => match(r.name, query)) : [];
   const surahResults = normalized ? surahNames.map((name, i) => ({ name, number: i + 1 }))
     .filter(s => match(s.name, surahQuery) || String(s.number) === surahQuery) : [];
-  const hadithResults = normalized ? hadith.filter(h => match(h.title + ' ' + h.text + ' ' + (h.explanation || ''), query)) : [];
+  const hadithResults = normalized ? (hadithIndex?.entries || []).filter(h => match(h.title + ' ' + h.text + ' ' + h.attribution + ' ' + h.id, query)) : [];
   const show = (type: string) => tab === 'الكل' || tab === type;
 
   useEffect(() => {
@@ -106,8 +107,10 @@ export default function GlobalSearch({ onReciter, onSurah, onTafsir, onHadith }:
         {!surahResults.length && tab === 'السور' && <p className="search-empty">لا توجد سورة مطابقة. جرّب الاسم أو رقم السورة.</p>}
       </section>}
       {show('الأحاديث') && <section className="result-section"><h2><BookOpen size={20} /> الأحاديث وشروحها <span>{hadithResults.length.toLocaleString('ar-EG')}</span></h2>
-        {hadithResults.slice(0, limit).map(h => <article className="search-result hadith-result" key={h.id}><strong>{h.title}</strong><p className="religious">{h.text}</p><p>{h.explanation}</p><small>{h.source}</small><button className="text-button" onClick={() => onHadith(h.id)}>قراءة الحديث وشرحه <ArrowLeft size={17} /></button></article>)}
-        {!hadithResults.length && tab === 'الأحاديث' && <p className="search-empty">لا توجد نتيجة في الأحاديث المختارة الموجودة بالتطبيق.</p>}
+        {hadithResults.slice(0, limit).map(h => <article className="search-result hadith-result" key={h.id}><strong>{h.title}</strong><p className="religious">{h.text}</p><small>{h.attribution} · الدرجة: {h.grade}</small><button className="text-button" onClick={() => onHadith('he-' + h.id)}>قراءة الحديث وشرحه <ArrowLeft size={17} /></button></article>)}
+        {hadithError && <div className="error" role="alert">{hadithError}<button className="text-button" onClick={retryHadith}>إعادة تحميل الأحاديث</button></div>}
+        {!hadithIndex && !hadithError && <p role="status">جارٍ تحميل مكتبة الأحاديث…</p>}
+        {hadithIndex && !hadithResults.length && tab === 'الأحاديث' && <p className="search-empty">لا توجد نتيجة في نصوص مكتبة الأحاديث الصحيحة المدرجة.</p>}
       </section>}
       {show('التفاسير') && <section className="result-section"><h2><BookOpen size={20} /> نصوص التفسير <span>{searched ? remote.length.toLocaleString('ar-EG') : '—'}</span></h2>
         {loading && <p role="status" className="search-empty">جارٍ البحث في {sourceName}…</p>}
@@ -119,6 +122,6 @@ export default function GlobalSearch({ onReciter, onSurah, onTafsir, onHadith }:
       {tab === 'الكل' && localEmpty && !remote.length && !loading && <p className="search-empty">{error ? 'لم نجد نتائج محلية، وتعذّر الاتصال بمصدر التفسير.' : searched ? 'لا توجد نتائج. جرّب كلمة أخرى.' : 'لا توجد نتائج محلية؛ اضغط بحث للبحث في التفسير.'}</p>}
       {(show('القرّاء') && readerResults.length > limit || show('السور') && surahResults.length > limit || show('الأحاديث') && hadithResults.length > limit || show('التفاسير') && remote.length > limit) && <button className="primary more-results" onClick={() => setLimit(limit + 12)}>عرض المزيد من النتائج</button>}
     </>}
-    <p className="source centered">القرّاء من MP3Quran · التفاسير عبر AlQuran Cloud · شروح الأحاديث ملخصة مع روابط موسوعة الأحاديث النبوية.</p>
+    <p className="source centered">القرّاء من MP3Quran · التفاسير عبر AlQuran Cloud · الأحاديث الصحيحة وشروحها من موسوعة الأحاديث النبوية.</p>
   </section>;
 }

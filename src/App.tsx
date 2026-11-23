@@ -33,6 +33,7 @@ import { hadith } from './religiousContent';
 import type { ReligiousEntry as Entry } from './religiousContent';
 import { surahNames } from './audioCatalog';
 import MemorizationReader from './MemorizationReader';
+import HadithLibrary from './HadithLibrary';
 import { readJourney, PROGRESS_KEY } from './quranProgress';
 import type { SurahProgress } from './quranProgress';
 
@@ -168,6 +169,7 @@ export default function App() {
   const [requestedReciter, setRequestedReciter] = useState<{ id: number; key: number } | null>(null);
   const [tafsirTarget, setTafsirTarget] = useState({ surah: 1, ayah: 1, source: 'ar.muyassar', key: 0 });
   const [expandedHadith, setExpandedHadith] = useState<string[]>([]);
+  const [libraryTarget, setLibraryTarget] = useState({ id: '', key: 0 });
   const [cityIndex, setCityIndex] = useState(() =>
     Math.max(0, Math.min(5, Number(read('city', 0)) || 0))
   );
@@ -330,15 +332,13 @@ export default function App() {
     void openSurah({ number: surah, name: 'سورة ' + surahNames[surah - 1] });
   }
   function openHadithFromSearch(id: string) {
-    const item = hadith.find(h => h.id === id);
-    if (!item) return;
     go('hadith');
-    setSearch(item.title);
-    setExpandedHadith(previous => previous.includes(id) ? previous : [...previous, id]);
+    setLibraryTarget(previous => ({ id: id.replace(/^he-/, ''), key: previous.key + 1 }));
   }
   function go(nextPage: Page) {
     requestId.current += 1;
     setPage(nextPage);
+    if (nextPage === 'hadith') setLibraryTarget(previous => ({ id: '', key: previous.key + 1 }));
     setMenu(false);
     setSearch('');
     setCategory('الكل');
@@ -1027,7 +1027,10 @@ export default function App() {
                   )}
                 </>
               )}
-              {(page === 'hadith' || page === 'dua' || page === 'saved') && (
+              {(page === 'hadith' || page === 'saved') && <HadithLibrary key={page + '-' + libraryTarget.key}
+                favorites={favorites} onFavorite={favorite} savedOnly={page === 'saved'}
+                initialId={page === 'hadith' ? libraryTarget.id : undefined} />}
+              {(page === 'dua' || page === 'saved') && (
                 <>
                   <div className="search-box">
                     <Search size={19} />
@@ -1053,7 +1056,7 @@ export default function App() {
                     ))}
                   </div>
                   <div className="entries-grid">{filtered.map(entryCard)}</div>
-                  {!filtered.length && (
+                  {!filtered.length && (page !== 'saved' || !favorites.some(id => id.startsWith('he-'))) && (
                     <div className="empty">
                       <Bookmark size={30} />
                       <h3>
@@ -1067,12 +1070,6 @@ export default function App() {
                           : 'جرّب تعديل البحث أو اختيار تصنيف آخر.'}
                       </p>
                     </div>
-                  )}
-                  {page === 'hadith' && (
-                    <p className="source centered">
-                      مجموعة مختارة من الصحيحين. يُذكر مصدر كل حديث، وتُوضّح
-                      المقتطفات.
-                    </p>
                   )}
                   {page === 'dua' && (
                     <p className="source centered">

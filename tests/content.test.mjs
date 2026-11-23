@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { gunzipSync } from 'node:zlib';
+import { gunzipSync, gzipSync } from 'node:zlib';
+import { readCompressedJson } from '../src/compressedJson.ts';
 import { isSahihGrade } from '../scripts/hadith-policy.mjs';
 import { alignTafsir } from '../src/tafsirPairs.ts';
 const read = path => JSON.parse(gunzipSync(fs.readFileSync(path)).toString('utf8'));
@@ -73,4 +74,11 @@ test('mushaf contains all 6236 verses once, in 604 original pages', () => {
   assert.equal(book.pages[2][0].number, 6);
   assert.equal(book.pages[603].at(-1).surah, 114);
   assert.equal(book.pages[603].at(-1).number, 6);
+});
+
+test('gzip data works with and without transparent server decompression', async () => {
+  const expected = { text: 'بيانات صحيحة' };
+  const json = JSON.stringify(expected);
+  assert.deepEqual(await readCompressedJson(new Response(json)), expected);
+  assert.deepEqual(await readCompressedJson(new Response(gzipSync(json))), expected);
 });

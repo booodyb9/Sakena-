@@ -1,3 +1,4 @@
+import { readCompressedJson } from './compressedJson';
 import { useEffect, useState } from 'react';
 export type HadithEntry = {
   id: string; title: string; text: string; grade: string;
@@ -19,8 +20,7 @@ async function resource(path: string) {
   try {
     const response = await fetch(new URL('data/hadith/' + path + '.gz', document.baseURI).href, { signal: controller.signal });
     if (!response.ok) throw new Error('hadith-resource');
-    if (!response.body) throw new Error('empty-body');
-    return await new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).json();
+    return await readCompressedJson(response);
   } finally { window.clearTimeout(timer); }
 }
 export function getHadithIndex() {

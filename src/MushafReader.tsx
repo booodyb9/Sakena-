@@ -1,3 +1,4 @@
+import { readCompressedJson } from './compressedJson';
 import { useEffect, useState } from 'react';
 import { Bookmark, ChevronLeft, ChevronRight } from 'lucide-react';
 import { surahNames } from './audioCatalog';
@@ -33,8 +34,7 @@ export function getMushaf() {
     try {
       const response = await fetch(new URL('data/mushaf.json.gz', document.baseURI), { signal: controller.signal });
       if (!response.ok) throw new Error('mushaf');
-      if (!response.body) throw new Error('empty-mushaf');
-      const data: Mushaf = await new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).json();
+      const data: Mushaf = await readCompressedJson(response);
       if (data.pageCount !== 604 || data.verseCount !== 6236 || data.pages.length !== 604 || data.surahs.length !== 114) throw new Error('invalid-mushaf');
       return data;
     } finally { window.clearTimeout(timer); }
